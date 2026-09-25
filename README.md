@@ -112,3 +112,4 @@ Tools/cslint.py     Structural checker for the C# sources
 - [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) — systems, the event bus, save format, generation order.
 - [`Docs/ART_DIRECTION.md`](Docs/ART_DIRECTION.md) — the palette, how the art is generated, how to restyle it.
 - [`Docs/SPEC_MAPPING.md`](Docs/SPEC_MAPPING.md) — where each section of the technical spec landed, and the deviations.
+- [`Docs/FIRST_RUN.md`](Docs/FIRST_RUN.md) — what a correct first run looks like, and what to do if it does not.

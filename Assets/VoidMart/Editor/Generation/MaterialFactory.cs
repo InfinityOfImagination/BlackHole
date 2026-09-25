@@ -130,6 +130,13 @@ namespace VoidMart.EditorTools
             {
                 var particle = AssetWriter.WriteMaterial("mat_particle", particleShader);
                 particle.SetColor("_BaseColor", Color.white);
+                // Soft round sprite so bursts read as puffs rather than squares.
+                var glow = assets.GetSprite("ui_glow");
+                if (glow != null && glow.texture != null)
+                {
+                    if (particle.HasProperty("_BaseMap")) particle.SetTexture("_BaseMap", glow.texture);
+                    if (particle.HasProperty("_MainTex")) particle.SetTexture("_MainTex", glow.texture);
+                }
                 if (particle.HasProperty("_Surface")) particle.SetFloat("_Surface", 1f);   // transparent
                 if (particle.HasProperty("_Blend")) particle.SetFloat("_Blend", 1f);       // additive
                 particle.renderQueue = 3200;

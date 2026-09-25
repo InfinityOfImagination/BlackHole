@@ -71,7 +71,8 @@ namespace VoidMart.UI
 
         void OnSwallow(SwallowInfo info)
         {
-            if (info.streak > 0 && info.streak % 5 != 0) return; // avoid label spam on rapid chains
+            // Only celebrate real chains, and only every fifth bite, or the screen fills up.
+            if (info.streak < 5 || info.streak % 5 != 0) return;
             Spawn("x" + info.streak, info.worldPosition, m_Config.theme.neonCyan);
         }
 
