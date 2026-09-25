@@ -1,0 +1,19 @@
+{
+    "name": "VoidMart.Editor",
+    "rootNamespace": "VoidMart.EditorTools",
+    "references": [
+        "VoidMart.Runtime",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
