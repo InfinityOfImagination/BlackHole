@@ -361,7 +361,7 @@ namespace VoidMart.Data
         [Tweakable("Audio", 60f, 200f)] public float musicBpm = 104f;
         [Range(0, 11)] public int musicRootNote = 9;          // A
         public bool musicMinorKey = true;
-        [Tweakable("Audio", 4f, 64f)] public int musicBars = 16;
+        [Tweakable("Audio", 4f, 64f)] public int musicBars = 8;
         [Range(0f, 1f)] public float musicSwing = 0.14f;
         [Range(0f, 1f)] public float reverbAmount = 0.28f;
         public int sampleRate = 44100;

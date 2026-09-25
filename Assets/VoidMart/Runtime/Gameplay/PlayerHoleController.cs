@@ -48,9 +48,10 @@ namespace VoidMart.Gameplay
         public float VisualRadius => m_VisualRadius;
         public float Load => m_Load;
         public double LoadValue => m_LoadValue;
-        public float Capacity => maxCapacity;
-        public float FillNormalized => maxCapacity <= 0f ? 0f : Mathf.Clamp01(m_Load / maxCapacity);
-        public bool IsFull => m_Load >= maxCapacity - 0.001f;
+        /// <summary>Authored capacity scaled by every capacity upgrade the player owns.</summary>
+        public float Capacity => maxCapacity * (m_Economy != null ? m_Economy.GetMultiplier(UpgradeEffect.HoleCapacity) : 1f);
+        public float FillNormalized => Capacity <= 0f ? 0f : Mathf.Clamp01(m_Load / Capacity);
+        public bool IsFull => m_Load >= Capacity - 0.001f;
         public int Tier => m_Tier;
         public Vector3 SwallowPoint => transform.position + Vector3.down * (Radius * 0.55f);
         public Vector3 Velocity => m_Velocity;
@@ -235,7 +236,7 @@ namespace VoidMart.Gameplay
         {
             if (prop == null) return;
 
-            m_Load = Mathf.Min(maxCapacity, m_Load + prop.Mass);
+            m_Load = Mathf.Min(Capacity, m_Load + prop.Mass);
             m_LoadValue += prop.Value;
             Grow(prop.Mass);
 
@@ -305,6 +306,15 @@ namespace VoidMart.Gameplay
             if (m_Load < 0.001f) { m_Load = 0f; m_LoadValue = 0d; }
             RaiseFill();
             return taken;
+        }
+
+        /// <summary>Editor/debug helper: tops the hole up to its current capacity.</summary>
+        public void FillLoad()
+        {
+            m_Load = Capacity;
+            m_LoadValue = m_Economy != null ? m_Economy.ValueForMass(m_Load, m_Tier) : m_Load;
+            RaiseFill();
+            Bus?.holeFull?.Raise();
         }
 
         public void ClearLoad()

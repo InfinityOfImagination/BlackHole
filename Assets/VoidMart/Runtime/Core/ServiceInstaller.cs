@@ -44,6 +44,7 @@ namespace VoidMart.Core
 
             Install();
             RegisterTweakables();
+            ConfigurePhysicsLayers();
             Haptics.ApplyFrom(m_Config.ui);
         }
 
@@ -72,6 +73,21 @@ namespace VoidMart.Core
             var component = go.AddComponent<T>();
             configure?.Invoke(component);
             return component;
+        }
+
+        /// <summary>
+        /// Props switch to the SubGround layer as they are eaten so they fall through the world
+        /// instead of bouncing off it - that layer must collide with nothing.
+        /// </summary>
+        static void ConfigurePhysicsLayers()
+        {
+            int subGround = LayerMask.NameToLayer(Gameplay.Layers.SubGroundName);
+            int swallowable = LayerMask.NameToLayer(Gameplay.Layers.SwallowableName);
+            int player = LayerMask.NameToLayer(Gameplay.Layers.PlayerName);
+            if (subGround < 0) return;
+
+            for (int layer = 0; layer < 32; layer++) Physics.IgnoreLayerCollision(subGround, layer, true);
+            if (swallowable >= 0 && player >= 0) Physics.IgnoreLayerCollision(swallowable, player, true);
         }
 
         void RegisterTweakables()

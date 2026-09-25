@@ -13,6 +13,9 @@ namespace VoidMart.UI
     /// </summary>
     public class IrisWipe : MonoBehaviour
     {
+        static readonly int CenterId = Shader.PropertyToID("_Center");
+        static readonly int RadiusId = Shader.PropertyToID("_Radius");
+
         [SerializeField] GameConfig m_Config;
         [SerializeField] Image m_Mask;
         [SerializeField] RectTransform m_MaskRect;
@@ -20,6 +23,8 @@ namespace VoidMart.UI
         [SerializeField] Canvas m_Canvas;
 
         float m_MaxRadius = 1600f;
+        Material m_Material;
+        Vector2 m_CentrePixels;
 
         public bool Busy { get; private set; }
 
@@ -37,14 +42,26 @@ namespace VoidMart.UI
             if (m_Config == null && ServiceInstaller.Active != null) m_Config = ServiceInstaller.Active.Config;
             if (m_MaskRect == null && m_Mask != null) m_MaskRect = m_Mask.rectTransform;
             if (m_Group != null) m_Group.alpha = 0f;
+
+            // The wipe is a full-screen quad with a shader-driven cut-out, so the hole can be
+            // any size without the covering geometry ever running out.
+            if (m_Mask != null && m_Mask.material != null)
+            {
+                m_Material = new Material(m_Mask.material);
+                m_Mask.material = m_Material;
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (m_Material != null) Destroy(m_Material);
         }
 
         float ComputeMaxRadius()
         {
             var ui = m_Config != null ? m_Config.ui : null;
-            float reference = ui != null ? Mathf.Max(ui.referenceWidth, ui.referenceHeight) : 1920f;
             float scale = ui != null ? ui.irisMaxRadiusScale : 1.45f;
-            return reference * scale;
+            return Mathf.Max(Screen.width, Screen.height) * scale;
         }
 
         /// <summary>Closes the iris over the player, runs an action, then opens it again.</summary>
@@ -60,13 +77,8 @@ namespace VoidMart.UI
             m_MaxRadius = ComputeMaxRadius();
 
             if (m_Group != null) m_Group.alpha = 1f;
-            if (m_MaskRect != null)
-            {
-                var camera = m_Canvas != null && m_Canvas.renderMode != RenderMode.ScreenSpaceOverlay ? m_Canvas.worldCamera : null;
-                var parent = m_MaskRect.parent as RectTransform;
-                if (parent != null && RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screenCentre, camera, out var local))
-                    m_MaskRect.anchoredPosition = local;
-            }
+            m_CentrePixels = screenCentre;
+            if (m_Material != null) m_Material.SetVector(CenterId, new Vector4(screenCentre.x, screenCentre.y, 0f, 0f));
 
             float duration = m_Config != null ? m_Config.ui.irisSeconds : 0.75f;
             yield return Animate(1f, 0f, duration);
@@ -97,8 +109,25 @@ namespace VoidMart.UI
 
         void SetRadius(float radius)
         {
-            if (m_MaskRect == null) return;
-            m_MaskRect.sizeDelta = new Vector2(radius * 2f, radius * 2f);
+            if (m_Material != null)
+            {
+                m_Material.SetFloat(RadiusId, radius);
+                m_Material.SetVector(CenterId, new Vector4(m_CentrePixels.x, m_CentrePixels.y, 0f, 0f));
+            }
+            else if (m_MaskRect != null)
+            {
+                m_MaskRect.sizeDelta = new Vector2(radius * 2f, radius * 2f);
+            }
+        }
+
+        /// <summary>Convenience for callers that just want the wipe centred on the player.</summary>
+        public Vector2 PlayerScreenPoint()
+        {
+            var hole = ServiceLocator.Get<Gameplay.PlayerHoleController>();
+            var camera = Camera.main;
+            if (hole == null || camera == null) return new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            Vector3 point = camera.WorldToScreenPoint(hole.transform.position);
+            return new Vector2(point.x, point.y);
         }
     }
 }
