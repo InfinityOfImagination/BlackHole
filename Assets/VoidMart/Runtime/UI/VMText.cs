@@ -93,7 +93,10 @@ namespace VoidMart.UI
             }
 
             float lineStep = m_Font.lineHeight * m_LineSpacing * size;
-            float blockHeight = lineStep * s_Lines.Count;
+            float capHeight = Mathf.Max(0.1f, m_Font.capHeight) * size;
+            // Measure the block by cap height, not the full line box: optically centred text
+            // should align on the capitals, not on space reserved for descenders.
+            float blockHeight = lineStep * (s_Lines.Count - 1) + capHeight;
 
             float startY;
             switch (m_Alignment)
@@ -101,15 +104,15 @@ namespace VoidMart.UI
                 case TextAnchor.UpperLeft:
                 case TextAnchor.UpperCenter:
                 case TextAnchor.UpperRight:
-                    startY = rect.yMax - m_Font.ascender * size;
+                    startY = rect.yMax - capHeight;
                     break;
                 case TextAnchor.LowerLeft:
                 case TextAnchor.LowerCenter:
                 case TextAnchor.LowerRight:
-                    startY = rect.yMin + blockHeight - m_Font.ascender * size;
+                    startY = rect.yMin + blockHeight - capHeight;
                     break;
                 default:
-                    startY = rect.center.y + blockHeight * 0.5f - m_Font.ascender * size;
+                    startY = rect.center.y + blockHeight * 0.5f - capHeight;
                     break;
             }
 

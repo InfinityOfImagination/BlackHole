@@ -241,6 +241,13 @@ namespace VoidMart.EditorTools
             var visualRoot = Anchor(root, "Visual Root", Vector3.zero);
             controller.BindVisuals(visualRoot, mask.transform, pit.transform, rim.transform);
 
+            // Way-finding arrow, shown once the hole is worth emptying.
+            var arrow = AddVisual(root, assets, "mesh_arrow", "mat_glow", Vector3.zero, null, 1f, "Store Arrow");
+            var arrowRenderer = arrow.GetComponent<MeshRenderer>();
+            if (arrowRenderer != null) arrowRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            arrow.SetActive(false);
+            root.AddComponent<NavigationHint>().BindArrow(arrow.transform);
+
             var prefab = AssetWriter.WritePrefab(root, "player_hole");
             assets.SetPrefab("player_hole", prefab);
         }
@@ -405,18 +412,19 @@ namespace VoidMart.EditorTools
         static void BuildZonePad(GameConfig config, GameAssets assets, int layer)
         {
             var root = NewRoot("zone_pad", layer);
+            var visualRoot = Anchor(root, "Visual Root", Vector3.zero);
 
-            var pad = AddVisual(root, assets, "mesh_zone_pad", "mat_glow", new Vector3(0f, 0.015f, 0f), null, 1f, "Pad");
+            var pad = AddVisual(visualRoot.gameObject, assets, "mesh_zone_pad", "mat_glow", new Vector3(0f, 0.015f, 0f), null, 1f, "Pad");
             var padRenderer = pad.GetComponent<MeshRenderer>();
 
-            var fill = AddVisual(root, assets, "mesh_quad_xz", "mat_glow", new Vector3(0f, 0.02f, 0f), null, 1f, "Fill");
+            var fill = AddVisual(visualRoot.gameObject, assets, "mesh_quad_xz", "mat_glow", new Vector3(0f, 0.02f, 0f), null, 1f, "Fill");
             fill.transform.localScale = new Vector3(0f, 1f, 1f);
 
             var marker = Anchor(root, "Marker", new Vector3(0f, 1.4f, 0f));
-            var label = UIFactory.BuildWorldLabel(config, assets, marker, "Node", "$0");
+            UIFactory.BuildWorldLabel(config, assets, marker, "Node", "$0");
 
             var zone = root.AddComponent<FurnishingZone>();
-            zone.BindVisuals(fill.transform, marker, padRenderer);
+            zone.BindVisuals(fill.transform, marker, padRenderer, visualRoot);
 
             var prefab = AssetWriter.WritePrefab(root, "zone_pad");
             assets.SetPrefab("zone_pad", prefab);

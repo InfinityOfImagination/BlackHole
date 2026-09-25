@@ -19,7 +19,19 @@ namespace VoidMart.Services
         bool m_CacheValid;
 
         public GameConfig Config => m_Config;
-        public SaveData Data => m_Save != null ? m_Save.Data : null;
+
+        // Resolved on demand: GameManager runs its Start before this component's, and it needs
+        // the wallet immediately to pay out offline earnings.
+        SaveService Save
+        {
+            get
+            {
+                if (m_Save == null) m_Save = ServiceLocator.Get<SaveService>();
+                return m_Save;
+            }
+        }
+
+        public SaveData Data => Save != null ? Save.Data : null;
         public double Cash => Data?.profile.softCurrency ?? 0d;
         public int Gems => Data?.profile.hardCurrency ?? 0;
         public int PlayerLevel => Data?.progress.playerLevel ?? 1;
@@ -74,7 +86,7 @@ namespace VoidMart.Services
             if (Data == null || amount == 0d) return;
             if (amount > 0d) Data.profile.lifetimeEarnings += amount;
             Data.profile.softCurrency = Math.Max(0d, Data.profile.softCurrency + amount);
-            m_Save?.MarkDirty();
+            Save?.MarkDirty();
             Bus?.cashChanged?.Raise(Data.profile.softCurrency);
         }
 
@@ -85,7 +97,7 @@ namespace VoidMart.Services
             if (Data == null || amount < 0d) return false;
             if (Data.profile.softCurrency < amount - 0.0001d) return false;
             Data.profile.softCurrency -= amount;
-            m_Save?.MarkDirty();
+            Save?.MarkDirty();
             Bus?.cashChanged?.Raise(Data.profile.softCurrency);
             return true;
         }
@@ -97,7 +109,7 @@ namespace VoidMart.Services
             double spent = Math.Min(requested, Data.profile.softCurrency);
             if (spent <= 0d) return 0d;
             Data.profile.softCurrency -= spent;
-            m_Save?.MarkDirty();
+            Save?.MarkDirty();
             Bus?.cashChanged?.Raise(Data.profile.softCurrency);
             return spent;
         }
@@ -106,7 +118,7 @@ namespace VoidMart.Services
         {
             if (Data == null || amount == 0) return;
             Data.profile.hardCurrency = Mathf.Max(0, Data.profile.hardCurrency + amount);
-            m_Save?.MarkDirty();
+            Save?.MarkDirty();
             Bus?.gemsChanged?.Raise(Data.profile.hardCurrency);
         }
 
@@ -114,7 +126,7 @@ namespace VoidMart.Services
         {
             if (Data == null || Data.profile.hardCurrency < amount) return false;
             Data.profile.hardCurrency -= amount;
-            m_Save?.MarkDirty();
+            Save?.MarkDirty();
             Bus?.gemsChanged?.Raise(Data.profile.hardCurrency);
             return true;
         }
@@ -132,7 +144,7 @@ namespace VoidMart.Services
                 Data.progress.playerLevel++;
                 Bus?.playerLevelUp?.Raise(Data.progress.playerLevel);
             }
-            m_Save?.MarkDirty();
+            Save?.MarkDirty();
             Bus?.xpChanged?.Raise(XpNormalized);
         }
 
@@ -161,8 +173,8 @@ namespace VoidMart.Services
             int level = GetUpgradeLevel(upgrade.id) + 1;
             Data.progress.upgradeLevels[upgrade.id] = level;
             m_CacheValid = false;
-            m_Save?.MarkDirty();
-            m_Save?.SaveNow();
+            Save?.MarkDirty();
+            Save?.SaveNow();
             Bus?.toast?.Raise(new ToastRequest(upgrade.displayName + " LV " + level, ToastStyle.Success));
             return true;
         }

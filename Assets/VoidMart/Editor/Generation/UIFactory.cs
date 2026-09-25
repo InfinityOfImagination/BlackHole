@@ -224,11 +224,12 @@ namespace VoidMart.EditorTools
             var upgradeButton = NewButton("Upgrades", hudRect, assets, "ui_button_primary", Color.white,
                 new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-28f, 42f), new Vector2(160f, 160f));
             AddIcon(upgradeButton.transform, assets, "icon_gear", Color.white, new Vector2(0f, 6f), 84f);
-            refs.upgradeButton = upgradeButton.gameObject;
+            refs.upgradeButton = upgradeButton;
 
             var settingsButton = NewButton("Settings", hudRect, assets, "ui_button_neutral", Color.white,
                 new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-28f, 222f), new Vector2(120f, 120f));
             AddIcon(settingsButton.transform, assets, "icon_music", Color.white, new Vector2(0f, 4f), 60f);
+            refs.settingsButton = settingsButton;
 
             // Fever offer (right edge)
             var feverButton = NewButton("Fever", hudRect, assets, "ui_button_warn", Color.white,
@@ -236,12 +237,17 @@ namespace VoidMart.EditorTools
             AddIcon(feverButton.transform, assets, "icon_bolt", Color.white, new Vector2(0f, 10f), 76f);
             NewText("Fever Label", feverButton.transform, assets, "3X", 30f, theme.voidInk, TextAnchor.LowerCenter,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 16f), new Vector2(140f, 34f));
-            refs.feverButton = feverButton.gameObject;
+            refs.feverButton = feverButton;
             feverButton.gameObject.SetActive(false);
-            feverButton.onClick.AddListener(hud.OnFeverPressed);
 
-            hud.Bind(config, refs);
-            ui.Hud = hud;
+            // Welcome-back "double it" offer (rv_double_offline).
+            var offlineButton = NewButton("Double Offline", hudRect, assets, "ui_button_action", Color.white,
+                new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-28f, -50f), new Vector2(150f, 150f));
+            AddIcon(offlineButton.transform, assets, "icon_offline", Color.white, new Vector2(0f, 10f), 70f);
+            NewText("Offline Label", offlineButton.transform, assets, "2X", 30f, theme.voidInk, TextAnchor.LowerCenter,
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 16f), new Vector2(140f, 34f));
+            refs.offlineButton = offlineButton;
+            offlineButton.gameObject.SetActive(false);
 
             // ---- floating labels -------------------------------------------------
             var floatLayer = FullScreen("Floating Text", safe);
@@ -272,8 +278,12 @@ namespace VoidMart.EditorTools
             ui.Settings = BuildSettingsModal(config, assets, root.transform, theme);
             ui.Puzzle = BuildPuzzleOverlay(config, assets, root.transform, theme);
 
-            upgradeButton.onClick.AddListener(ui.Upgrades.Open);
-            settingsButton.onClick.AddListener(ui.Settings.Open);
+            // Button handlers are attached by HUDController at runtime; listeners added from an
+            // editor script are not serialised into the scene.
+            refs.upgradeModal = ui.Upgrades;
+            refs.settingsPanel = ui.Settings;
+            hud.Bind(config, refs);
+            ui.Hud = hud;
 
             // ---- iris wipe (always last, drawn on top) ---------------------------
             var irisRoot = FullScreen("Iris Wipe", root.transform);
@@ -295,7 +305,7 @@ namespace VoidMart.EditorTools
 
         // ------------------------------------------------------------- modals
 
-        static (RectTransform panel, CanvasGroup group, GameObject blocker) BuildModalShell(
+        static (RectTransform host, RectTransform panel, CanvasGroup group, GameObject blocker) BuildModalShell(
             string name, Transform parent, GameAssets assets, ThemeConfig theme, Vector2 size, Vector2 anchoredPosition, Vector2 pivot)
         {
             var host = FullScreen(name, parent);
@@ -310,7 +320,7 @@ namespace VoidMart.EditorTools
                 anchoredPosition, size);
             NewImage("BG", panel, assets.GetSprite("ui_sheet"), theme.paper,
                 Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, true);
-            return (panel, group, blocker.gameObject);
+            return (host, panel, group, blocker.gameObject);
         }
 
         static UpgradeModal BuildUpgradeModal(GameConfig config, GameAssets assets, Transform parent, ThemeConfig theme)
@@ -345,7 +355,7 @@ namespace VoidMart.EditorTools
             var fitter = content.gameObject.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var scroll = shell.panel.gameObject.AddComponent<ScrollRect>();
+            var scroll = shell.panel.gameObject.AddComponent<ScrollRect>();  // scrolling stays on the panel
             scroll.viewport = viewport;
             scroll.content = content;
             scroll.horizontal = false;
@@ -355,7 +365,7 @@ namespace VoidMart.EditorTools
             var template = BuildUpgradeRow(config, assets, content, theme);
             template.SetActive(false);
 
-            var modal = shell.panel.gameObject.AddComponent<UpgradeModal>();
+            var modal = shell.host.gameObject.AddComponent<UpgradeModal>();
             modal.BindModal(config, shell.panel, shell.group, ModalTransition.SlideUp, shell.blocker);
             modal.BindContent(content, template, header, close);
             return modal;
@@ -436,7 +446,7 @@ namespace VoidMart.EditorTools
                 new Color(theme.voidIndigo.r, theme.voidIndigo.g, theme.voidIndigo.b, 0.6f), TextAnchor.LowerCenter,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 22f), new Vector2(400f, 40f));
 
-            var panel = shell.panel.gameObject.AddComponent<SettingsPanel>();
+            var panel = shell.host.gameObject.AddComponent<SettingsPanel>();
             panel.BindModal(config, shell.panel, shell.group, ModalTransition.Fade, shell.blocker);
             panel.BindControls(music, sfx, haptics, noAds, restore, close, reset, version);
             return panel;
@@ -545,7 +555,7 @@ namespace VoidMart.EditorTools
             NewText("Label", skip.transform, assets, "FIX", 34f, Color.white, TextAnchor.MiddleRight,
                 Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(-18f, 4f), new Vector2(-60f, -24f));
 
-            var overlay = shell.panel.gameObject.AddComponent<PuzzleOverlayUI>();
+            var overlay = shell.host.gameObject.AddComponent<PuzzleOverlayUI>();
             overlay.BindModal(config, shell.panel, shell.group, ModalTransition.ScalePop, shell.blocker);
             overlay.BindBoard(board, cellTemplate, tray, traySlot, blockTemplate, timerFill, header, timerLabel, skip, 90f);
             return overlay;

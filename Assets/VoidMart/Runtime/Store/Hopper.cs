@@ -31,8 +31,15 @@ namespace VoidMart.Store
         public void Configure(GameConfig config, Transform mouth, Transform pad, float radius)
         {
             m_Config = config;
-            m_Mouth = mouth;
-            m_Pad = pad;
+            if (mouth != null) m_Mouth = mouth;
+            if (pad != null) m_Pad = pad;
+            m_Radius = radius;
+        }
+
+        /// <summary>Runtime configuration that leaves the prefab's bound transforms alone.</summary>
+        public void ConfigureRuntime(GameConfig config, float radius)
+        {
+            m_Config = config;
             m_Radius = radius;
         }
 

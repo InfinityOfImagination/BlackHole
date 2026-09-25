@@ -113,7 +113,8 @@ namespace VoidMart.EditorTools
 
         static void BuildPitTube(MeshBuilder b, ThemeConfig t, ArtConfig a)
         {
-            b.AddTube(new Vector3(0f, 0.5f, 0f), 0.5f, 1f, 32, t.voidIndigo, t.voidInk);
+            // Authored with the rim at y = 0 so scaling the depth only ever digs downwards.
+            b.AddTube(Vector3.zero, 0.5f, 1f, 32, t.voidIndigo, t.voidInk);
         }
 
         // ============================================================ tier 1 junk

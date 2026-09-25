@@ -19,6 +19,7 @@ namespace VoidMart.Store
         [SerializeField] Transform m_FillVisual;
         [SerializeField] Transform m_Marker;
         [SerializeField] Renderer m_PadRenderer;
+        [SerializeField] Transform m_VisualRoot;
 
         StoreManager m_Store;
         EconomyService m_Economy;
@@ -47,11 +48,12 @@ namespace VoidMart.Store
             m_Node = node;
         }
 
-        public void BindVisuals(Transform fillVisual, Transform marker, Renderer padRenderer)
+        public void BindVisuals(Transform fillVisual, Transform marker, Renderer padRenderer, Transform visualRoot = null)
         {
             m_FillVisual = fillVisual;
             m_Marker = marker;
             m_PadRenderer = padRenderer;
+            m_VisualRoot = visualRoot;
         }
 
         void Start()
@@ -63,6 +65,11 @@ namespace VoidMart.Store
             m_Hole = ServiceLocator.Get<PlayerHoleController>();
 
             m_Cost = m_Store != null ? m_Store.CostOf(m_Node) : (m_Node?.BaseCost ?? 1d);
+
+            // Only the footprint stretches to the node size - the price tag keeps its aspect.
+            if (m_VisualRoot != null && m_Node != null)
+                m_VisualRoot.localScale = new Vector3(m_Node.zoneSize.x, 1f, m_Node.zoneSize.y);
+
             RestoreProgress();
             RefreshVisibility();
             RefreshFill();

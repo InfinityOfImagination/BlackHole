@@ -51,6 +51,10 @@ namespace VoidMart.UI
             m_Captured = true;
         }
 
+        /// <summary>
+        /// Only the panel itself is deactivated, never the component's own object: modals have to
+        /// keep receiving Start/Update so they can listen for the events that open them.
+        /// </summary>
         void ApplyClosedState()
         {
             if (m_Group != null)
@@ -60,7 +64,7 @@ namespace VoidMart.UI
                 m_Group.blocksRaycasts = false;
             }
             if (m_Blocker != null) m_Blocker.SetActive(false);
-            gameObject.SetActive(false);
+            if (m_Panel != null) m_Panel.gameObject.SetActive(false);
         }
 
         public virtual void Open()
@@ -68,7 +72,7 @@ namespace VoidMart.UI
             if (IsOpen) return;
             CapturePose();
             IsOpen = true;
-            gameObject.SetActive(true);
+            if (m_Panel != null) m_Panel.gameObject.SetActive(true);
             if (m_Blocker != null) m_Blocker.SetActive(true);
             if (m_Group != null)
             {
@@ -146,8 +150,12 @@ namespace VoidMart.UI
 
             if (m_Group != null) m_Group.alpha = 0f;
             if (m_Blocker != null) m_Blocker.SetActive(false);
-            if (m_Panel != null) m_Panel.anchoredPosition = m_ShownPosition;
-            gameObject.SetActive(false);
+            if (m_Panel != null)
+            {
+                m_Panel.anchoredPosition = m_ShownPosition;
+                m_Panel.localScale = Vector3.one;
+                m_Panel.gameObject.SetActive(false);
+            }
             OnClosed();
             m_Routine = null;
         }

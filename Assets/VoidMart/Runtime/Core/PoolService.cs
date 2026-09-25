@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace VoidMart.Core
 {
@@ -14,11 +15,22 @@ namespace VoidMart.Core
         {
             m_Root = transform;
             ServiceLocator.Register(this);
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         void OnDestroy()
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
             if (ServiceLocator.Get<PoolService>() == this) ServiceLocator.Unregister<PoolService>();
+        }
+
+        /// <summary>
+        /// The pool survives scene loads with the service installer, so anything still live from
+        /// the previous scene has to go back in the bag before the new one repopulates it.
+        /// </summary>
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (mode == LoadSceneMode.Single) DespawnAll();
         }
 
         public ObjectPool Register(string key, GameObject prefab, int prewarm, int maxSize = 512)

@@ -43,6 +43,7 @@ namespace VoidMart.Core
             if (m_Config.events != null) ServiceLocator.Register(m_Config.events);
 
             Install();
+            RegisterCommonPools();
             RegisterTweakables();
             ConfigurePhysicsLayers();
             Haptics.ApplyFrom(m_Config.ui);
@@ -58,6 +59,20 @@ namespace VoidMart.Core
             EnsureChild<MockIapService>("IapService", s => s.Configure(m_Config));
             EnsureChild<LocalPlatformService>("PlatformService", null);
             EnsureChild<RuntimeTweakerOverlay>("RuntimeTweaker", null);
+        }
+
+        /// <summary>Effects and shoppers are shared across the whole game, so they pool here.</summary>
+        void RegisterCommonPools()
+        {
+            var pools = ServiceLocator.Get<PoolService>();
+            var assets = m_Config != null ? m_Config.assets : null;
+            if (pools == null || assets == null) return;
+
+            pools.Register("fx_cash_bill", assets.GetPrefab("fx_cash_bill"), 24, 128);
+            pools.Register("fx_product_box", assets.GetPrefab("fx_product_box"), 16, 96);
+            pools.Register("fx_junk", assets.GetPrefab("fx_junk"), 16, 96);
+            pools.Register("fx_poof", assets.GetPrefab("fx_poof"), 4, 24);
+            pools.Register("customer", assets.GetPrefab("customer"), Mathf.Max(4, m_Config.store.maxCustomers), 64);
         }
 
         T EnsureChild<T>(string childName, System.Action<T> configure) where T : Component

@@ -119,6 +119,25 @@ namespace VoidMart.EditorTools
 
         public void EraseCircle(Vector2 centre, float radius) => Erase(CircleSdf(centre, radius));
 
+        /// <summary>Subtracts another painter's coverage - used to knock lettering out of shapes.</summary>
+        public void EraseFrom(TexturePainter mask, int offsetX = 0, int offsetY = 0)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    int sx = x - offsetX, sy = y - offsetY;
+                    if (sx < 0 || sy < 0 || sx >= mask.Width || sy >= mask.Height) continue;
+                    float coverage = mask.Pixels[sy * mask.Width + sx].a;
+                    if (coverage <= 0.002f) continue;
+                    int index = y * Width + x;
+                    var color = Pixels[index];
+                    color.a *= 1f - coverage;
+                    Pixels[index] = color;
+                }
+            }
+        }
+
         public void EraseRect(Rect rect, float radius) => Erase(RoundedRectSdf(rect, radius));
 
         // ---------------------------------------------------------------- SDFs

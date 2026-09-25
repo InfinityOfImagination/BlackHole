@@ -170,14 +170,32 @@ namespace VoidMart.Store
         public float CustomerRateMultiplier => m_Economy != null ? m_Economy.GetMultiplier(UpgradeEffect.CustomerRate) : 1f;
         public float JamResistance => m_Economy != null ? m_Economy.GetAdditive(UpgradeEffect.JamResistance) : 0f;
         public float UnloadMultiplier => m_Economy != null ? m_Economy.GetMultiplier(UpgradeEffect.UnloadSpeed) : 1f;
+        /// <summary>
+        /// How many helpers should exist: one per unlocked robot bay plus any granted by the
+        /// "Hire Helper" upgrade, capped by the store config.
+        /// </summary>
         public int RobotBudget
         {
             get
             {
                 int fromUpgrades = m_Economy != null ? Mathf.FloorToInt(m_Economy.GetAdditive(UpgradeEffect.RobotCount)) : 0;
-                int hired = m_Save?.Data != null ? m_Save.Data.progress.robotsHired : 0;
                 int cap = m_Config != null ? m_Config.store.maxRobots : 4;
-                return Mathf.Clamp(fromUpgrades + hired, 0, cap);
+                return Mathf.Clamp(fromUpgrades + UnlockedRobotBays, 0, cap);
+            }
+        }
+
+        public int UnlockedRobotBays
+        {
+            get
+            {
+                if (m_Config == null) return 0;
+                int count = 0;
+                for (int i = 0; i < m_Config.furnishingNodes.Count; i++)
+                {
+                    var node = m_Config.furnishingNodes[i];
+                    if (node != null && node.Category == FurnitureType.Robot && IsUnlocked(node.NodeID)) count++;
+                }
+                return count;
             }
         }
     }

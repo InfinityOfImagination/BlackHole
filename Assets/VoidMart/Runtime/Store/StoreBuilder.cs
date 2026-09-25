@@ -93,7 +93,6 @@ namespace VoidMart.Store
             instance.name = "Pad_" + node.NodeID;
             instance.transform.localPosition = node.localPosition;
             instance.transform.localRotation = Quaternion.Euler(0f, node.yaw, 0f);
-            instance.transform.localScale = new Vector3(node.zoneSize.x, 1f, node.zoneSize.y);
 
             var zone = instance.GetComponent<FurnishingZone>();
             if (zone == null) zone = instance.AddComponent<FurnishingZone>();
@@ -175,7 +174,7 @@ namespace VoidMart.Store
                 case FurnitureType.Hopper:
                 {
                     var hopper = instance.GetComponent<Hopper>();
-                    if (hopper != null && m_Config != null) hopper.Configure(m_Config, null, null, Mathf.Max(node.zoneSize.x, node.zoneSize.y) * 0.5f + 1.2f);
+                    hopper?.ConfigureRuntime(m_Config, Mathf.Max(node.zoneSize.x, node.zoneSize.y) * 0.5f + 1.2f);
                     break;
                 }
                 case FurnitureType.Robot:

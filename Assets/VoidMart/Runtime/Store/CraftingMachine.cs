@@ -33,6 +33,7 @@ namespace VoidMart.Store
         float m_JamTimer;
         float m_SinceJam;
         float m_ShakePhase;
+        float m_RetryCooldown;
         bool m_PuzzleRequested;
 
         public string MachineId => m_MachineId;
@@ -91,7 +92,8 @@ namespace VoidMart.Store
             if (m_State.isJammed)
             {
                 AnimateJam(deltaTime);
-                CheckPlayerProximity();
+                if (m_RetryCooldown > 0f) m_RetryCooldown -= deltaTime;
+                else CheckPlayerProximity();
                 return;
             }
 
@@ -232,6 +234,7 @@ namespace VoidMart.Store
             if (result.machineId != m_MachineId) return;
             m_PuzzleRequested = false;
             if (result.solved) Repair();
+            else m_RetryCooldown = 2.5f;   // let the player walk away before trying again
         }
 
         void AnimateJam(float deltaTime)

@@ -58,8 +58,11 @@ namespace VoidMart.UI
             }
         }
 
-        void Start()
+        void Start() => TryBind();
+
+        void TryBind()
         {
+            if (m_Puzzle != null) return;
             m_Puzzle = ServiceLocator.Get<PuzzleController>();
             if (m_Puzzle == null) return;
             m_Puzzle.Generated += OnGenerated;
@@ -183,6 +186,7 @@ namespace VoidMart.UI
 
         void Update()
         {
+            if (m_Puzzle == null) TryBind();
             if (!IsOpen || m_Puzzle == null) return;
             if (m_TimerFill != null) m_TimerFill.fillAmount = m_Puzzle.TimeNormalized;
             if (m_TimerLabel != null) m_TimerLabel.SetText(Mathf.Max(0f, m_Puzzle.TimeRemaining).ToString("0.0") + "s");

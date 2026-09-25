@@ -27,6 +27,8 @@ namespace VoidMart.Data
         public Material material;
         public int pixelHeight = 72;
         public float lineHeight = 1.24f;
+        [Tooltip("Height of a capital letter in em - what vertical centring aligns on.")]
+        public float capHeight = 0.72f;
         public float ascender = 0.78f;
         public float descender = -0.22f;
         public float spaceAdvance = 0.32f;

@@ -293,10 +293,18 @@ namespace VoidMart.EditorTools
 
         static void IconCash(TexturePainter p, float s)
         {
-            p.RoundedRect(new Rect(s * 0.1f, s * 0.26f, s * 0.8f, s * 0.48f), s * 0.07f, Ink);
-            p.EraseCircle(new Vector2(s * 0.5f, s * 0.5f), s * 0.14f);
-            p.Circle(new Vector2(s * 0.5f, s * 0.5f), s * 0.09f, Ink);
-            p.Capsule(new Vector2(s * 0.5f, s * 0.34f), new Vector2(s * 0.5f, s * 0.66f), s * 0.022f, Ink);
+            // A banknote with the display font's own dollar sign knocked out of it.
+            p.RoundedRect(new Rect(s * 0.08f, s * 0.26f, s * 0.84f, s * 0.48f), s * 0.08f, Ink);
+
+            var cut = new TexturePainter(p.Width, p.Height);
+            float cap = s * 0.30f;
+            float stroke = cap * 0.30f;
+            float width = FontGenerator.MeasureText("$", cap, stroke, 0f);
+            FontGenerator.DrawText(cut, "$", new Vector2((s - width) * 0.5f, s * 0.38f), cap, stroke, Color.white, 0f, 0.2f);
+            cut.BlurAlpha(1);
+            p.EraseFrom(cut);
+
+            p.RoundedRectOutline(new Rect(s * 0.14f, s * 0.31f, s * 0.72f, s * 0.38f), s * 0.05f, s * 0.022f, Ink);
         }
 
         static void IconGem(TexturePainter p, float s)
@@ -308,7 +316,9 @@ namespace VoidMart.EditorTools
                 new Vector2(s * 0.12f, s * 0.58f)
             };
             p.Polygon(points, Ink);
-            p.Capsule(new Vector2(s * 0.5f, s * 0.88f), new Vector2(s * 0.5f, s * 0.14f), s * 0.012f, new Color(0f, 0f, 0f, 0.6f));
+            // Facets are cut out rather than shaded so the icon reads at any tint.
+            p.Erase(TexturePainter.CapsuleSdf(new Vector2(s * 0.5f, s * 0.86f), new Vector2(s * 0.5f, s * 0.16f), s * 0.016f));
+            p.Erase(TexturePainter.CapsuleSdf(new Vector2(s * 0.14f, s * 0.58f), new Vector2(s * 0.86f, s * 0.58f), s * 0.016f));
         }
 
         static void IconBolt(TexturePainter p, float s)
@@ -382,8 +392,11 @@ namespace VoidMart.EditorTools
                 var b = centre + new Vector2(Mathf.Cos(nextAngle), -Mathf.Sin(nextAngle)) * s * 0.3f;
                 p.Capsule(a, b, s * 0.09f, Ink);
             }
-            p.RoundedRect(new Rect(s * 0.11f, s * 0.12f, s * 0.18f, s * 0.2f), s * 0.03f, Ink);
-            p.RoundedRect(new Rect(s * 0.71f, s * 0.12f, s * 0.18f, s * 0.2f), s * 0.03f, Ink);
+            // Poles reach up to meet the arc ends so the horseshoe reads as one piece.
+            p.RoundedRect(new Rect(s * 0.13f, s * 0.10f, s * 0.18f, s * 0.46f), s * 0.04f, Ink);
+            p.RoundedRect(new Rect(s * 0.69f, s * 0.10f, s * 0.18f, s * 0.46f), s * 0.04f, Ink);
+            p.Erase(TexturePainter.RoundedRectSdf(new Rect(s * 0.13f, s * 0.10f, s * 0.18f, s * 0.13f), s * 0.03f));
+            p.Erase(TexturePainter.RoundedRectSdf(new Rect(s * 0.69f, s * 0.10f, s * 0.18f, s * 0.13f), s * 0.03f));
         }
 
         static void IconRobot(TexturePainter p, float s)

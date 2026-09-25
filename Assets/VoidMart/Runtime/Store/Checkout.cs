@@ -128,11 +128,13 @@ namespace VoidMart.Store
             });
         }
 
+        const double CashPerBundle = 25d;
+
         void RefreshCashStack()
         {
             if (m_CashStack == null) return;
-            double scale = m_Config != null ? System.Math.Max(1d, m_Config.economy.startingCash + 50d) : 50d;
-            int count = Mathf.Clamp(Mathf.RoundToInt((float)(m_PendingCash / scale) * m_CashStack.MaxVisible), m_PendingCash > 0d ? 1 : 0, m_CashStack.MaxVisible);
+            int bundles = (int)System.Math.Floor(m_PendingCash / CashPerBundle);
+            int count = Mathf.Clamp(bundles, m_PendingCash > 0d ? 1 : 0, m_CashStack.MaxVisible);
             m_CashStack.SetCount(count);
         }
 

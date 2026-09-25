@@ -73,8 +73,10 @@ namespace VoidMart.Gameplay
             var city = m_Config.city;
             m_Random = new System.Random(city.randomSeed);
 
-            float extent = city.blocksX * Pitch + city.roadWidth;
-            float extentZ = city.blocksZ * Pitch + city.roadWidth;
+            // The street texture tiles once per block pitch, so the ground has to be an exact
+            // multiple of it or the road markings drift out of alignment.
+            float extent = city.blocksX * Pitch;
+            float extentZ = city.blocksZ * Pitch;
             DistrictBounds = new Bounds(Vector3.zero, new Vector3(extent, 1f, extentZ));
 
             BuildGround(extent, extentZ);
@@ -198,9 +200,11 @@ namespace VoidMart.Gameplay
 
         Vector3 BlockCentre(int ix, int iz, float half, float halfZ)
         {
+            // Inside each tile the road occupies [0, roadWidth] and the block the remainder,
+            // matching how the street texture is painted.
             var city = m_Config.city;
-            float x = -half + city.roadWidth * 0.5f + city.blockSize * 0.5f + ix * Pitch;
-            float z = -halfZ + city.roadWidth * 0.5f + city.blockSize * 0.5f + iz * Pitch;
+            float x = -half + city.roadWidth + city.blockSize * 0.5f + ix * Pitch;
+            float z = -halfZ + city.roadWidth + city.blockSize * 0.5f + iz * Pitch;
             return new Vector3(x, 0f, z);
         }
 

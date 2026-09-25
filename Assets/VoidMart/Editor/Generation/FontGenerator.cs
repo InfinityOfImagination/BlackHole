@@ -61,7 +61,12 @@ namespace VoidMart.EditorTools
             glyphs['P'] = G(w, L(0f, 0f, 0f, 1f), A(0f, 0.72f, w * 0.92f, 0.28f, 90f, -90f));
             glyphs['Q'] = G(w * 1.05f, A(w * 0.525f, 0.5f, w * 0.525f, 0.5f, 0f, 360f), L(w * 0.62f, 0.3f, w * 1.02f, -0.06f));
             glyphs['R'] = G(w, L(0f, 0f, 0f, 1f), A(0f, 0.72f, w * 0.88f, 0.28f, 90f, -90f), L(w * 0.34f, 0.44f, w, 0f));
-            glyphs['S'] = G(w, A(w * 0.5f, 0.72f, w * 0.5f, 0.28f, 0f, 200f), L(w * 0.03f, 0.62f, w * 0.03f, 0.38f), A(w * 0.5f, 0.28f, w * 0.5f, 0.28f, 160f, 340f));
+            // S is three strokes: the top bowl sweeping left, the spine crossing the middle, and
+            // the bottom bowl sweeping right. Getting the spine wrong turns it into a C.
+            glyphs['S'] = G(w,
+                A(w * 0.5f, 0.70f, w * 0.5f, 0.28f, 20f, 200f),
+                L(w * 0.03f, 0.61f, w * 0.97f, 0.39f),
+                A(w * 0.5f, 0.30f, w * 0.5f, 0.28f, 20f, -160f));
             glyphs['T'] = G(w, L(0f, 1f, w, 1f), L(w * 0.5f, 0f, w * 0.5f, 1f));
             glyphs['U'] = G(w, L(0f, 1f, 0f, 0.3f), A(w * 0.5f, 0.3f, w * 0.5f, 0.3f, 180f, 360f), L(w, 0.3f, w, 1f));
             glyphs['V'] = G(w, L(0f, 1f, w * 0.5f, 0f), L(w * 0.5f, 0f, w, 1f));
@@ -95,8 +100,15 @@ namespace VoidMart.EditorTools
             glyphs['='] = G(0.5f, L(0.05f, 0.36f, 0.45f, 0.36f), L(0.05f, 0.62f, 0.45f, 0.62f));
             glyphs['/'] = G(0.44f, L(0.02f, -0.04f, 0.42f, 1f));
             glyphs['\\'] = G(0.44f, L(0.02f, 1f, 0.42f, -0.04f));
-            glyphs['%'] = G(w * 1.1f, A(w * 0.22f, 0.78f, w * 0.2f, 0.2f, 0f, 360f), A(w * 0.88f, 0.22f, w * 0.2f, 0.2f, 0f, 360f), L(0f, 0f, w * 1.1f, 1f));
-            glyphs['$'] = G(w, A(w * 0.5f, 0.66f, w * 0.44f, 0.22f, 0f, 200f), L(w * 0.06f, 0.58f, w * 0.06f, 0.4f), A(w * 0.5f, 0.3f, w * 0.44f, 0.22f, 160f, 340f), L(w * 0.5f, -0.1f, w * 0.5f, 1.1f));
+            glyphs['%'] = G(w * 1.05f,
+                A(w * 0.24f, 0.75f, w * 0.23f, 0.23f, 0f, 360f),
+                A(w * 0.81f, 0.25f, w * 0.23f, 0.23f, 0f, 360f),
+                L(w * 0.04f, 0.03f, w * 1.01f, 0.97f));
+            glyphs['$'] = G(w,
+                A(w * 0.5f, 0.68f, w * 0.46f, 0.25f, 20f, 200f),
+                L(w * 0.06f, 0.60f, w * 0.94f, 0.42f),
+                A(w * 0.5f, 0.33f, w * 0.46f, 0.25f, 20f, -160f),
+                L(w * 0.5f, -0.06f, w * 0.5f, 1.06f));
             glyphs['('] = G(0.3f, A(0.3f, 0.48f, 0.3f, 0.62f, 130f, 230f));
             glyphs[')'] = G(0.3f, A(0f, 0.48f, 0.3f, 0.62f, 50f, -50f));
             glyphs['['] = G(0.28f, L(0.24f, 1.06f, 0.04f, 1.06f), L(0.04f, 1.06f, 0.04f, -0.08f), L(0.04f, -0.08f, 0.24f, -0.08f));
@@ -106,7 +118,11 @@ namespace VoidMart.EditorTools
             glyphs['*'] = G(0.42f, L(0.21f, 0.5f, 0.21f, 0.94f), L(0.03f, 0.61f, 0.39f, 0.83f), L(0.03f, 0.83f, 0.39f, 0.61f));
             glyphs['#'] = G(w, L(w * 0.22f, 0f, w * 0.32f, 1f), L(w * 0.62f, 0f, w * 0.72f, 1f), L(0f, 0.32f, w * 0.9f, 0.32f), L(0f, 0.68f, w * 0.9f, 0.68f));
             glyphs['@'] = G(w * 1.15f, A(w * 0.575f, 0.5f, w * 0.575f, 0.5f, 300f, 20f), A(w * 0.575f, 0.45f, w * 0.24f, 0.24f, 0f, 360f), L(w * 1.1f, 0.45f, w * 1.1f, 0.3f));
-            glyphs['&'] = G(w, A(w * 0.4f, 0.8f, w * 0.3f, 0.2f, 0f, 360f), L(w * 0.62f, 0f, w * 0.14f, 0.62f), A(w * 0.38f, 0.26f, w * 0.34f, 0.26f, 180f, 380f));
+            glyphs['&'] = G(w * 1.15f,
+                A(w * 0.42f, 0.80f, w * 0.32f, 0.20f, 0f, 360f),   // upper bowl
+                A(w * 0.46f, 0.28f, w * 0.46f, 0.28f, 45f, 305f),  // lower bowl, open to the right
+                L(w * 0.12f, 0.56f, w * 0.80f, 0.04f),             // crossing stroke
+                L(w * 0.79f, 0.36f, w * 1.15f, 0.02f));            // tail
             glyphs['~'] = G(0.5f, A(0.15f, 0.5f, 0.14f, 0.1f, 180f, 0f), A(0.4f, 0.5f, 0.12f, 0.1f, 180f, 360f));
             glyphs['^'] = G(0.44f, L(0.04f, 0.72f, 0.22f, 0.98f), L(0.22f, 0.98f, 0.4f, 0.72f));
             glyphs['|'] = G(0.14f, L(0.07f, -0.08f, 0.07f, 1.06f));
@@ -124,7 +140,7 @@ namespace VoidMart.EditorTools
             public Vector2 Bearing;
         }
 
-        public static (Texture2D atlas, VMFontAsset.Glyph[] glyphs, float ascender, float descender, float spaceAdvance)
+        public static (Texture2D atlas, VMFontAsset.Glyph[] glyphs, float ascender, float descender, float spaceAdvance, float capHeight)
             Build(ArtConfig art)
         {
             var table = BuildGlyphs();
@@ -205,7 +221,7 @@ namespace VoidMart.EditorTools
             float ascender = (capHeight + stroke * 0.5f) / pixelHeight;
             float descender = -(descent + stroke * 0.5f) / pixelHeight;
             float spaceAdvance = capHeight * 0.34f / pixelHeight;
-            return (atlas, results.ToArray(), ascender, descender, spaceAdvance);
+            return (atlas, results.ToArray(), ascender, descender, spaceAdvance, capHeight / pixelHeight);
         }
 
         /// <summary>

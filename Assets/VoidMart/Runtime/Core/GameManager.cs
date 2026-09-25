@@ -51,6 +51,7 @@ namespace VoidMart.Core
             {
                 bus.puzzleCompleted?.Register(OnPuzzleCompleted);
                 bus.puzzleRequested?.Register(OnPuzzleRequested);
+                bus.nodePurchased?.Register(OnNodePurchased);
             }
 
             SetState(GameState.Gathering);
@@ -65,6 +66,7 @@ namespace VoidMart.Core
             {
                 bus.puzzleCompleted?.Unregister(OnPuzzleCompleted);
                 bus.puzzleRequested?.Unregister(OnPuzzleRequested);
+                bus.nodePurchased?.Unregister(OnNodePurchased);
             }
         }
 
@@ -172,6 +174,16 @@ namespace VoidMart.Core
         // ----------------------------------------------------------------- puzzle
 
         void OnPuzzleRequested(string machineId) => SetState(GameState.Puzzle);
+
+        /// <summary>
+        /// int_level_clear: buying a new factory node is the game's "level cleared" beat, so that
+        /// is where the interstitial is gated - behind its cooldown, and never for no-ads owners.
+        /// </summary>
+        void OnNodePurchased(string nodeId)
+        {
+            if (m_SessionTime < (m_Config != null ? m_Config.monetization.firstInterstitialDelay : 240f)) return;
+            TryShowLevelClearInterstitial();
+        }
 
         void OnPuzzleCompleted(PuzzleResult result)
         {

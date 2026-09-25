@@ -114,7 +114,8 @@ namespace VoidMart.EditorTools
                 ? (GameObject)PrefabUtility.InstantiatePrefab(prefab)
                 : new GameObject("Player Hole");
             player.name = "Player";
-            player.transform.position = new Vector3(0f, 0f, -config.city.blocksZ * (config.city.blockSize + config.city.roadWidth) * 0.25f);
+            // Start inside the district but on the shop side, so the first run home is short.
+            player.transform.position = new Vector3(0f, 0f, config.city.blocksZ * (config.city.blockSize + config.city.roadWidth) * 0.22f);
 
             var controller = player.GetComponent<PlayerHoleController>();
             if (controller == null) controller = player.AddComponent<PlayerHoleController>();
@@ -206,12 +207,12 @@ namespace VoidMart.EditorTools
             // Anchors.
             var door = new GameObject("Customer Door").transform;
             door.SetParent(root.transform, false);
-            door.localPosition = new Vector3(StoreSize.x * 0.5f - 1.5f, 0f, -4f);
+            door.localPosition = new Vector3(StoreSize.x * 0.5f - 1.5f, 0f, 0f);   // inside the east wall gap
             door.localRotation = Quaternion.Euler(0f, -90f, 0f);
 
             var exit = new GameObject("Customer Exit").transform;
             exit.SetParent(root.transform, false);
-            exit.localPosition = new Vector3(StoreSize.x * 0.5f + 3f, 0f, -4f);
+            exit.localPosition = new Vector3(StoreSize.x * 0.5f + 4f, 0f, 0f);
 
             var bank = new GameObject("Robot Bank").transform;
             bank.SetParent(root.transform, false);

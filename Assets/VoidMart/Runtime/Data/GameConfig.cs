@@ -260,7 +260,7 @@ namespace VoidMart.Data
         [Tweakable("Store", 0.1f, 20f)] public float machineBaseRate = 2.4f;
         [Tweakable("Store", 0.5f, 20f)] public float machineInputPerProduct = 3.2f;
         [Tweakable("Store", 1f, 60f)] public float machineOutputCapacity = 14f;
-        [Tweakable("Store", 0f, 1f)] public float jamChancePerMinute = 0.55f;
+        [Tweakable("Store", 0f, 1f)] public float jamChancePerMinute = 0.4f;
         [Tweakable("Store", 5f, 300f)] public float minSecondsBetweenJams = 26f;
         [Tweakable("Store", 0f, 1f)] public float jamThroughputPenalty = 1f;
 
@@ -311,7 +311,7 @@ namespace VoidMart.Data
         [Tweakable("Economy", 10f, 4000f)] public float xpBase = 120f;
         [Tweakable("Economy", 1f, 3f)] public float xpGrowth = 1.35f;
 
-        [Tweakable("Economy", 0f, 1f)] public double offlineEarningRate = 0.45d;
+        [Tweakable("Economy", 0f, 1f)] public double offlineEarningRate = 0.22d;
         [Tweakable("Economy", 0f, 86400f)] public double offlineCapSeconds = 7200d;
         [Tweakable("Economy", 0f, 600f)] public double offlineMinimumSeconds = 60d;
 

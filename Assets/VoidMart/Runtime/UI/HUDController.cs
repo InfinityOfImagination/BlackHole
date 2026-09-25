@@ -28,9 +28,15 @@ namespace VoidMart.UI
             public RectTransform cashGroup;
             public RectTransform gemGroup;
             public RectTransform capacityGroup;
-            public GameObject feverButton;
-            public GameObject upgradeButton;
             public Image capacityGlow;
+
+            [Header("Interactive")]
+            public Button feverButton;
+            public Button offlineButton;
+            public Button upgradeButton;
+            public Button settingsButton;
+            public UpgradeModal upgradeModal;
+            public SettingsPanel settingsPanel;
         }
 
         [SerializeField] GameConfig m_Config;
@@ -38,8 +44,11 @@ namespace VoidMart.UI
 
         EconomyService m_Economy;
         PlayerHoleController m_Hole;
+        const float OfflineOfferSeconds = 30f;
+
         float m_CapacityDisplay;
         float m_FeverPulse;
+        float m_OfflineTimer;
 
         public Refs Widgets => m_Refs;
 
@@ -56,6 +65,8 @@ namespace VoidMart.UI
             if (m_Config == null && ServiceInstaller.Active != null) m_Config = ServiceInstaller.Active.Config;
             m_Economy = ServiceLocator.Get<EconomyService>();
             m_Hole = ServiceLocator.Get<PlayerHoleController>();
+
+            WireButtons();
 
             var bus = Bus;
             if (bus != null)
@@ -89,6 +100,35 @@ namespace VoidMart.UI
             bus.playerLevelUp?.Unregister(OnLevelUp);
             bus.holeFillChanged?.Unregister(OnCapacity);
             bus.areaChanged?.Unregister(OnArea);
+        }
+
+        /// <summary>
+        /// Click handlers are attached here rather than at build time: listeners added from an
+        /// editor script are not serialised, so they would silently vanish when the scene loads.
+        /// </summary>
+        void WireButtons()
+        {
+            if (m_Refs.upgradeButton != null && m_Refs.upgradeModal != null)
+            {
+                m_Refs.upgradeButton.onClick.RemoveAllListeners();
+                m_Refs.upgradeButton.onClick.AddListener(m_Refs.upgradeModal.Open);
+            }
+            if (m_Refs.settingsButton != null && m_Refs.settingsPanel != null)
+            {
+                m_Refs.settingsButton.onClick.RemoveAllListeners();
+                m_Refs.settingsButton.onClick.AddListener(m_Refs.settingsPanel.Open);
+            }
+            if (m_Refs.feverButton != null)
+            {
+                m_Refs.feverButton.onClick.RemoveAllListeners();
+                m_Refs.feverButton.onClick.AddListener(OnFeverPressed);
+            }
+            if (m_Refs.offlineButton != null)
+            {
+                m_Refs.offlineButton.onClick.RemoveAllListeners();
+                m_Refs.offlineButton.onClick.AddListener(OnDoubleOfflinePressed);
+                m_Refs.offlineButton.gameObject.SetActive(false);
+            }
         }
 
         void OnCash(double value)
@@ -159,23 +199,40 @@ namespace VoidMart.UI
             }
 
             var manager = GameManager.Instance;
+            if (m_Refs.offlineButton != null && manager != null)
+            {
+                m_OfflineTimer += Time.unscaledDeltaTime;
+                bool offer = manager.PendingOfflineReward > 0.5d && m_OfflineTimer < OfflineOfferSeconds;
+                var offlineObject = m_Refs.offlineButton.gameObject;
+                if (offlineObject.activeSelf != offer) offlineObject.SetActive(offer);
+            }
+
             if (m_Refs.feverButton != null && manager != null)
             {
+                var feverObject = m_Refs.feverButton.gameObject;
                 bool show = manager.ShouldOfferFever();
-                if (m_Refs.feverButton.activeSelf != show) m_Refs.feverButton.SetActive(show);
+                if (feverObject.activeSelf != show) feverObject.SetActive(show);
                 if (show)
                 {
                     m_FeverPulse += Time.unscaledDeltaTime * 3.2f;
-                    m_Refs.feverButton.transform.localScale = Vector3.one * (1f + Mathf.Sin(m_FeverPulse) * 0.07f);
+                    feverObject.transform.localScale = Vector3.one * (1f + Mathf.Sin(m_FeverPulse) * 0.07f);
                 }
             }
+        }
+
+        /// <summary>rv_double_offline - only offered while a fresh welcome-back payout is pending.</summary>
+        public void OnDoubleOfflinePressed()
+        {
+            ServiceLocator.Get<AudioService>()?.PlayUi();
+            GameManager.Instance?.OfferDoubleOffline();
+            if (m_Refs.offlineButton != null) m_Refs.offlineButton.gameObject.SetActive(false);
         }
 
         public void OnFeverPressed()
         {
             ServiceLocator.Get<AudioService>()?.PlayUi();
             GameManager.Instance?.RequestFever();
-            if (m_Refs.feverButton != null) m_Refs.feverButton.SetActive(false);
+            if (m_Refs.feverButton != null) m_Refs.feverButton.gameObject.SetActive(false);
         }
     }
 }

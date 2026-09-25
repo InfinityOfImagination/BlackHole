@@ -232,6 +232,7 @@ namespace VoidMart.EditorTools
             font.ascender = fontResult.ascender;
             font.descender = fontResult.descender;
             font.spaceAdvance = fontResult.spaceAdvance;
+            font.capHeight = fontResult.capHeight;
             font.lineHeight = 1.24f;
             font.InvalidateCache();
             assets.displayFont = font;
