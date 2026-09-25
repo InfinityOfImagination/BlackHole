@@ -40,6 +40,12 @@ Nothing is imported. Four generators build everything:
 - **`AudioSynth` + `AudioLibrary`** — oscillators, ADSR envelopes, a one-pole filter and a
   Schroeder reverb, composing three music loops and twelve effects.
 
+## The prop set
+
+Rendered from the generators, not from Unity — the same geometry the build produces:
+
+![Props](preview/props.png)
+
 ## Shading
 
 `VoidMart/ClayLit` is a wrapped-diffuse surface: a soft `saturate((N·L + wrap) / (1 + wrap))`
