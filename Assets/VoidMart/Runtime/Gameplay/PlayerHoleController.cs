@@ -345,7 +345,9 @@ namespace VoidMart.Gameplay
             if (m_VisualRoot != null) m_VisualRoot.localScale = new Vector3(diameter, 1f, diameter);
             if (m_MaskQuad != null) m_MaskQuad.localScale = new Vector3(diameter, diameter, 1f);
             if (m_RimRing != null) m_RimRing.localScale = new Vector3(diameter * 1.06f, 1f, diameter * 1.06f);
-            if (m_PitMesh != null) m_PitMesh.localScale = new Vector3(diameter * 0.99f, Mathf.Max(3f, diameter * 1.6f), diameter * 0.99f);
+            // Slightly wider than the stencil circle: the stencil clips the overhang, and the
+            // extra width guarantees no sliver of sky shows between the ground and the shaft.
+            if (m_PitMesh != null) m_PitMesh.localScale = new Vector3(diameter * 1.04f, Mathf.Max(3f, diameter * 1.6f), diameter * 1.04f);
         }
 
         public void BindVisuals(Transform visualRoot, Transform maskQuad, Transform pit, Transform rim)

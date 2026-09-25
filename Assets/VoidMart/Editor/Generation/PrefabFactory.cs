@@ -221,7 +221,7 @@ namespace VoidMart.EditorTools
 
             // The cavity itself, sitting under the street and only visible through the stencil.
             var pit = AddVisual(root, assets, "mesh_pit_tube", "mat_pit",
-                new Vector3(0f, -0.05f, 0f), null, 1f, "Pit Interior");
+                new Vector3(0f, 0.01f, 0f), null, 1f, "Pit Interior");
             var pitRenderer = pit.GetComponent<MeshRenderer>();
             if (pitRenderer != null)
             {

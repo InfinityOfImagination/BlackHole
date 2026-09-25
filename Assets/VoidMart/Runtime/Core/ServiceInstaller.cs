@@ -42,6 +42,7 @@ namespace VoidMart.Core
             if (m_Config.assets != null) ServiceLocator.Register(m_Config.assets);
             if (m_Config.events != null) ServiceLocator.Register(m_Config.events);
 
+            ApplyFrameTarget();
             Install();
             RegisterCommonPools();
             RegisterTweakables();
@@ -59,6 +60,13 @@ namespace VoidMart.Core
             EnsureChild<MockIapService>("IapService", s => s.Configure(m_Config));
             EnsureChild<LocalPlatformService>("PlatformService", null);
             EnsureChild<RuntimeTweakerOverlay>("RuntimeTweaker", null);
+        }
+
+        /// <summary>Uncapped vsync plus an explicit 60 FPS target, per the performance brief.</summary>
+        static void ApplyFrameTarget()
+        {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
         }
 
         /// <summary>Effects and shoppers are shared across the whole game, so they pool here.</summary>

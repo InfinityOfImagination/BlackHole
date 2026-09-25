@@ -532,16 +532,28 @@ namespace VoidMart.EditorTools
         {
             var body = t.machineBody;
             var accent = t.machineAccent;
-            b.AddBox(new Vector3(0f, 0.12f, 0f), new Vector3(2.9f, 0.24f, 2.9f), Shade(body, -0.4f), 0.04f);
-            b.AddCylinder(new Vector3(0f, 0.24f, 0f), 0.55f, 1.5f, 1.7f, 12, body, false);
-            b.AddCylinder(new Vector3(0f, 1.94f, 0f), 1.5f, 1.55f, 0.18f, 12, accent, false);
-            b.AddRing(new Vector3(0f, 2.12f, 0f), 1.2f, 1.56f, 12, Shade(accent, -0.25f), accent);
+            var frame = Shade(body, -0.45f);
+
+            // Plinth and legs.
+            b.AddBox(new Vector3(0f, 0.11f, 0f), new Vector3(2.1f, 0.22f, 2.1f), frame, 0.04f);
             for (int i = 0; i < 4; i++)
             {
                 float angle = i * Mathf.PI * 0.5f + Mathf.PI * 0.25f;
-                b.AddBox(new Vector3(Mathf.Cos(angle) * 1.25f, 1.0f, Mathf.Sin(angle) * 1.25f), new Vector3(0.12f, 1.9f, 0.12f), Shade(body, -0.35f));
+                var offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 0.82f;
+                b.AddBox(offset + new Vector3(0f, 0.58f, 0f), new Vector3(0.14f, 0.92f, 0.14f), frame);
             }
-            b.AddBox(new Vector3(0f, 0.5f, 1.02f), new Vector3(0.7f, 0.3f, 0.06f), t.neonCyan);
+
+            // Neck, funnel and lip: the silhouette that says "pour things in here".
+            b.AddCylinder(new Vector3(0f, 0.22f, 0f), 0.42f, 0.5f, 0.72f, 12, Shade(body, -0.18f));
+            b.AddCylinder(new Vector3(0f, 0.94f, 0f), 0.5f, 1.42f, 1.26f, 12, body, false);
+            b.AddCylinder(new Vector3(0f, 2.20f, 0f), 1.42f, 1.5f, 0.2f, 12, accent, false);
+            b.AddRing(new Vector3(0f, 2.40f, 0f), 1.12f, 1.5f, 12, Shade(accent, -0.35f), accent);
+            b.AddRing(new Vector3(0f, 2.34f, 0f), 0f, 1.12f, 12, t.voidInk, Shade(t.voidIndigo, 0.2f));
+
+            // Banding and a status panel so the silhouette is not one smooth cone.
+            b.AddCylinder(new Vector3(0f, 1.52f, 0f), 1.05f, 1.08f, 0.1f, 12, Shade(body, -0.3f), false);
+            b.AddBox(new Vector3(0f, 0.62f, 0.56f), new Vector3(0.64f, 0.3f, 0.06f), t.neonCyan);
+            b.AddBox(new Vector3(0.72f, 0.5f, 0f), new Vector3(0.2f, 0.2f, 0.2f), t.coral, 0.04f);
         }
 
         static void BuildMachine(MeshBuilder b, ThemeConfig t, ArtConfig a)

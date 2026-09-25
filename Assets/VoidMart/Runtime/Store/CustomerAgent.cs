@@ -204,7 +204,9 @@ namespace VoidMart.Store
 
         void GiveUp()
         {
-            if (m_Items > 0 && m_Shelf != null) m_Shelf.DeliverIncoming(m_Shelf.ProductId);
+            // Put everything back on the shelf, not just one unit.
+            if (m_Shelf != null)
+                for (int i = 0; i < m_Items; i++) m_Shelf.DeliverIncoming(m_Shelf.ProductId);
             m_Items = 0;
             m_Bill = 0d;
             m_CarryStack?.SetCount(0);

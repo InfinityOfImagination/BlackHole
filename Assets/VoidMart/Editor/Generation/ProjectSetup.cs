@@ -116,7 +116,6 @@ namespace VoidMart.EditorTools
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
-            PlayerSettings.gpuSkinning = true;
 
             try
             {
@@ -133,9 +132,6 @@ namespace VoidMart.EditorTools
             {
                 Debug.LogWarning("[VoidMart] Android player settings skipped: " + e.Message);
             }
-
-            QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = 60;
         }
 
         static string ToTitle(string raw)

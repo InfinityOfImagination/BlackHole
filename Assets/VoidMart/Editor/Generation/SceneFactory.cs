@@ -293,10 +293,22 @@ namespace VoidMart.EditorTools
             var go = new GameObject("EventSystem");
             go.AddComponent<EventSystem>();
 
-            // Use the Input System's UI module when the package is present; fall back otherwise.
+            // This project ships with Input System handling only, so the legacy module would
+            // throw at runtime. Prefer the Input System module and make sure it has actions:
+            // AddComponent does not call Reset(), which is what normally assigns them.
             var moduleType = Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
-            if (moduleType != null) go.AddComponent(moduleType);
-            else go.AddComponent<StandaloneInputModule>();
+            if (moduleType != null)
+            {
+                var module = go.AddComponent(moduleType);
+                var assign = moduleType.GetMethod("AssignDefaultActions",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                try { assign?.Invoke(module, null); }
+                catch (Exception e) { Debug.LogWarning("[VoidMart] Could not assign default UI actions: " + e.Message); }
+            }
+            else
+            {
+                go.AddComponent<StandaloneInputModule>();
+            }
         }
     }
 }

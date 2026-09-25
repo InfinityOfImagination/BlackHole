@@ -90,8 +90,9 @@ Shader "VoidMart/PitInterior"
 
             half4 Fragment(Varyings input) : SV_Target
             {
-                // 0 at the lip, 1 deep down the shaft.
-                half depth = saturate((0.5 - input.positionOS.y) / max(0.001, _Depth));
+                // The tube is authored with its rim at object-space y = 0 and the shaft running
+                // down to y = -1, so depth is 0 at the lip and 1 at the floor.
+                half depth = saturate(-input.positionOS.y / max(0.001, _Depth));
 
                 half swirl = sin(atan2(input.positionOS.z, input.positionOS.x) * 3.0
                                  + depth * 9.0 - _Time.y * _SwirlSpeed * 3.0);
