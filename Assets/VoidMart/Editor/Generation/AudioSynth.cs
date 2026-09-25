@@ -187,22 +187,24 @@ namespace VoidMart.EditorTools
                 Buffer[i] = (float)(Buffer[i] * (1.0 - amount * 0.5) + wet[i] * amount * 0.22);
         }
 
-        /// <summary>Crossfades the tail into the head so the clip loops seamlessly.</summary>
-        public void MakeSeamless(double crossfadeSeconds)
+        /// <summary>
+        /// Folds the decay tail back onto the head so the clip loops seamlessly.
+        ///
+        /// The buffer is rendered a little longer than the loop: the extra region holds the
+        /// reverb and release of notes that started before the loop point. Adding that region
+        /// onto the beginning (rather than crossfading into it, which would duck the first beat)
+        /// means the trimmed loop continues into itself exactly.
+        /// </summary>
+        public void MakeSeamless(double tailSeconds)
         {
-            int fadeFrames = (int)(crossfadeSeconds * SampleRate);
-            if (fadeFrames <= 0 || fadeFrames * 2 >= FrameCount) return;
+            int tailFrames = (int)(tailSeconds * SampleRate);
+            if (tailFrames <= 0 || tailFrames * 2 >= FrameCount) return;
 
-            for (int i = 0; i < fadeFrames; i++)
+            for (int i = 0; i < tailFrames; i++)
             {
-                float t = i / (float)fadeFrames;
                 int head = i * Channels;
-                int tail = (FrameCount - fadeFrames + i) * Channels;
-                for (int c = 0; c < Channels; c++)
-                {
-                    float mixed = Buffer[head + c] * t + Buffer[tail + c] * (1f - t);
-                    Buffer[head + c] = mixed;
-                }
+                int tail = (FrameCount - tailFrames + i) * Channels;
+                for (int c = 0; c < Channels; c++) Buffer[head + c] += Buffer[tail + c];
             }
         }
 
