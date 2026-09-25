@@ -247,16 +247,27 @@ namespace VoidMart.EditorTools
                     continue;
                 }
 
-                var scratch = new TexturePainter(painter.Width, painter.Height);
-                foreach (var segment in glyph.Segments)
-                    DrawSegment(scratch, segment, penX + stroke * 0.5f, baselineStart.y, capHeight, stroke * 0.5f, rounding);
+                // Draw into a glyph-sized tile and composite it, rather than allocating a
+                // full-canvas scratch buffer per character.
+                const int pad = 2;
+                float descentRoom = capHeight * 0.38f;
+                int tileW = Mathf.CeilToInt(glyph.Width * capHeight + stroke + pad * 2);
+                int tileH = Mathf.CeilToInt(capHeight * 1.18f + stroke + descentRoom + pad * 2);
+                var scratch = new TexturePainter(tileW, tileH);
 
-                for (int y = 0; y < painter.Height; y++)
-                    for (int x = 0; x < painter.Width; x++)
+                foreach (var segment in glyph.Segments)
+                    DrawSegment(scratch, segment, pad + stroke * 0.5f, pad + descentRoom, capHeight, stroke * 0.5f, rounding);
+
+                int offsetX = Mathf.RoundToInt(penX - pad);
+                int offsetY = Mathf.RoundToInt(baselineStart.y - pad - descentRoom);
+                for (int y = 0; y < tileH; y++)
+                {
+                    for (int x = 0; x < tileW; x++)
                     {
-                        float alpha = scratch.Pixels[y * painter.Width + x].a;
-                        if (alpha > 0.002f) painter.Blend(x, y, color, alpha);
+                        float alpha = scratch.Pixels[y * tileW + x].a;
+                        if (alpha > 0.002f) painter.Blend(offsetX + x, offsetY + y, color, alpha);
                     }
+                }
 
                 penX += glyph.Width * capHeight + stroke + capHeight * tracking;
             }

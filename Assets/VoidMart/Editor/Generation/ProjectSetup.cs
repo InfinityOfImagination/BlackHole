@@ -155,19 +155,15 @@ namespace VoidMart.EditorTools
         /// </summary>
         public static void ConfigureUniversalRenderPipeline()
         {
-            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets" });
+            // Search by concrete type name - no compile-time reference to URP needed.
+            string[] guids = AssetDatabase.FindAssets("t:UniversalRendererData");
             int patched = 0;
 
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (!path.EndsWith(".asset", System.StringComparison.Ordinal)) continue;
-
                 var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-                if (asset == null) continue;
-
-                string typeName = asset.GetType().Name;
-                if (typeName != "UniversalRendererData") continue;
+                if (asset == null || asset.GetType().Name != "UniversalRendererData") continue;
 
                 var serialized = new SerializedObject(asset);
                 var priming = serialized.FindProperty("m_DepthPrimingMode");

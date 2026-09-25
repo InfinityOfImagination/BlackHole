@@ -34,17 +34,9 @@ namespace VoidMart.EditorTools
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             GameConfig config = null;
 
-            try
-            {
-                AssetDatabase.StartAssetEditing();
-                AssetWriter.EnsureFolders();
-                AssetWriter.EnsureFolder(EventFolder);
-                AssetWriter.EnsureFolder(NodeFolder);
-            }
-            finally
-            {
-                AssetDatabase.StopAssetEditing();
-            }
+            AssetWriter.EnsureFolders();
+            AssetWriter.EnsureFolder(EventFolder);
+            AssetWriter.EnsureFolder(NodeFolder);
 
             try
             {
@@ -71,6 +63,9 @@ namespace VoidMart.EditorTools
                 BuildAudio(config);
 
                 Step(interactive, "Prefabs", 0.78f);
+                // Prefabs are assembled from temporary scene objects; do that in a scratch scene
+                // so whatever the user had open is never dirtied.
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
                 PrefabFactory.BuildAll(config, config.assets);
 
                 Step(interactive, "Store nodes", 0.86f);
