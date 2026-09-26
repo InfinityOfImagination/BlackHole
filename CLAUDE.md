@@ -30,6 +30,13 @@ project and check the Console too.
 
 ## Gotchas worth remembering
 
+- **One Unity object per file, named after the class.** A `MonoBehaviour` or `ScriptableObject`
+  in a file with a different name gets no MonoScript, and `AddComponent` / `CreateInstance` then
+  fail with "No script asset for X". That is why the event channels live one-per-file under
+  `Runtime/Core/Channels/`. The linter enforces this.
+- **Editor asset operations can destroy the managed wrapper** around an asset you are holding, so
+  a long generator must re-resolve by path rather than keep one reference across reimports (see
+  `VoidMartBuilder.Require`).
 - **Listeners added from editor scripts are not serialised.** Wire `Button.onClick` at runtime
   (see `HUDController.WireButtons`), never in the generators.
 - **A modal must not deactivate its own GameObject**, or its `Start`/`Update` stop running and it

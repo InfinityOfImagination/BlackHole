@@ -47,44 +47,52 @@ namespace VoidMart.EditorTools
                 ProjectSetup.ApplyAll(config);
 
                 Step(interactive, "Content tables", 0.14f);
-                BuildContent(config);
+                BuildContent(config = Require(config));
 
                 Step(interactive, "Meshes", 0.22f);
-                BuildMeshes(config);
+                BuildMeshes(config = Require(config));
 
                 Step(interactive, "Textures, sprites and font", 0.38f);
-                BuildArt(config);
+                BuildArt(config = Require(config));
 
                 Step(interactive, "Materials", 0.55f);
+                config = Require(config);
                 MaterialFactory.BuildAll(config, config.assets);
                 AttachGroundTextures(config);
 
                 Step(interactive, "Audio", 0.62f);
-                BuildAudio(config);
+                BuildAudio(config = Require(config));
 
                 Step(interactive, "Prefabs", 0.78f);
                 // Prefabs are assembled from temporary scene objects; do that in a scratch scene
                 // so whatever the user had open is never dirtied.
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                config = Require(config);
                 PrefabFactory.BuildAll(config, config.assets);
 
                 Step(interactive, "Store nodes", 0.86f);
-                BuildNodes(config);
+                BuildNodes(config = Require(config));
 
                 Step(interactive, "Scenes", 0.92f);
+                config = Require(config);
                 SceneFactory.BuildBoot(config, config.assets);
+                config = Require(config);
                 SceneFactory.BuildGame(config, config.assets);
                 ProjectSetup.ApplyBuildSettings(SceneFactory.BootScenePath, SceneFactory.GameScenePath);
 
+                config = Require(config);
+                var assets = config.assets;
                 EditorUtility.SetDirty(config);
-                EditorUtility.SetDirty(config.assets);
+                if (assets != null) EditorUtility.SetDirty(assets);
                 AssetWriter.Save();
 
                 stopwatch.Stop();
                 Debug.Log($"[VoidMart] Build complete in {stopwatch.Elapsed.TotalSeconds:0.0}s. " +
                           $"{config.props.Count} props, {config.products.Count} products, " +
-                          $"{config.furnishingNodes.Count} store nodes, {config.assets.meshes.Count} meshes, " +
-                          $"{config.assets.sprites.Count} sprites, {config.assets.clips.Count} audio clips.");
+                          $"{config.furnishingNodes.Count} store nodes, " +
+                          $"{(assets != null ? assets.meshes.Count : 0)} meshes, " +
+                          $"{(assets != null ? assets.sprites.Count : 0)} sprites, " +
+                          $"{(assets != null ? assets.clips.Count : 0)} audio clips.");
 
                 if (interactive)
                 {
@@ -109,6 +117,25 @@ namespace VoidMart.EditorTools
         static void Step(bool interactive, string label, float progress)
         {
             if (interactive) EditorUtility.DisplayProgressBar("Void Mart — building", label, progress);
+        }
+
+        /// <summary>
+        /// Re-resolves the config from disk if the reference we are holding has gone stale.
+        ///
+        /// Reimporting assets and creating scenes can destroy and rebuild the managed wrapper
+        /// around an asset, at which point the old reference compares equal to null and any use
+        /// of it throws MissingReferenceException. Reloading by path is cheap and always valid.
+        /// </summary>
+        static GameConfig Require(GameConfig config)
+        {
+            if (config != null) return config;
+
+            var reloaded = AssetDatabase.LoadAssetAtPath<GameConfig>(ConfigPath);
+            if (reloaded == null)
+                throw new InvalidOperationException(
+                    "The GameConfig asset at " + ConfigPath + " could not be loaded. " +
+                    "Delete Assets/VoidMart/Generated and run the setup again.");
+            return reloaded;
         }
 
         // ------------------------------------------------------------- config

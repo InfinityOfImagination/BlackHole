@@ -158,6 +158,43 @@ for path, info in file_info.items():
                 continue
         errors.append(f"{path}: type '{tok}' (declared in {', '.join(sorted(owners))}) used without a matching using")
 
+# 5. Unity requires a MonoBehaviour / ScriptableObject to live in a file named after it,
+#    otherwise no MonoScript exists and AddComponent / CreateInstance fail at runtime with
+#    "No script asset for X".
+class_bases = {}
+for path, info in file_info.items():
+    for m in re.finditer(r'\b(?:public|internal|sealed|abstract|partial|static|\s)*\bclass\s+'
+                         r'([A-Za-z_]\w*)(?:\s*<[^>]*>)?\s*:\s*([A-Za-z_][\w<>\.]*)', info['code']):
+        class_bases[m.group(1)] = (path, m.group(2).split('<')[0].split('.')[-1])
+
+UNITY_ROOTS = {'MonoBehaviour', 'ScriptableObject'}
+
+def unity_root(name, seen=None):
+    seen = seen or set()
+    if name in seen:
+        return None
+    seen.add(name)
+    if name in UNITY_ROOTS:
+        return name
+    if name not in class_bases:
+        return None
+    return unity_root(class_bases[name][1], seen)
+
+for cls, (path, _) in sorted(class_bases.items()):
+    root = unity_root(cls)
+    if root is None:
+        continue
+    code = file_info[path]['code']
+    # Abstract and generic types are never instantiated, so they need no MonoScript.
+    if re.search(r'\babstract\s+class\s+' + re.escape(cls) + r'\b', code):
+        continue
+    if re.search(r'\bclass\s+' + re.escape(cls) + r'\s*<', code):
+        continue
+    stem = os.path.splitext(os.path.basename(path))[0]
+    if stem != cls:
+        errors.append(f"{path}: {root} '{cls}' must live in a file named '{cls}.cs' "
+                      f"(Unity creates no script asset otherwise)")
+
 print(f"scanned {len(files)} files, {len(type_ns)} declared types")
 for w in warnings: print("WARN ", w)
 for e in errors: print("ERROR", e)

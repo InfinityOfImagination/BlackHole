@@ -9,6 +9,9 @@ namespace VoidMart.Core
     /// and listen through these assets, so the UI / audio layers never hold a hard reference to a
     /// gameplay controller.  Listener lists are pre-sized and iterated backwards, which keeps the
     /// hot path free of allocations and safe against un-registration during dispatch.
+    ///
+    /// Concrete channels live one-per-file under <c>Channels/</c>: Unity only creates a MonoScript
+    /// for the type whose name matches the file, and without one no asset can be made from it.
     /// </summary>
     public abstract class GameEventChannelBase : ScriptableObject
     {
@@ -47,65 +50,6 @@ namespace VoidMart.Core
 
         protected virtual void OnDisable() => m_Listeners.Clear();
     }
-
-    /// <summary>Payload-free signal.</summary>
-    [CreateAssetMenu(fileName = "Evt_Signal", menuName = "VoidMart/Events/Signal")]
-    public class SignalChannel : GameEventChannelBase
-    {
-        readonly List<Action> m_Listeners = new List<Action>(8);
-
-        public void Register(Action listener)
-        {
-            if (listener == null || m_Listeners.Contains(listener)) return;
-            m_Listeners.Add(listener);
-        }
-
-        public void Unregister(Action listener)
-        {
-            if (listener == null) return;
-            m_Listeners.Remove(listener);
-        }
-
-        public void Raise()
-        {
-            for (int i = m_Listeners.Count - 1; i >= 0; i--)
-            {
-                var listener = m_Listeners[i];
-                if (listener == null) { m_Listeners.RemoveAt(i); continue; }
-                try { listener(); }
-                catch (Exception e) { Debug.LogException(e, this); }
-            }
-        }
-
-        void OnDisable() => m_Listeners.Clear();
-    }
-
-    [CreateAssetMenu(fileName = "Evt_Int", menuName = "VoidMart/Events/Int")]
-    public class IntChannel : GameEventChannel<int> { }
-
-    [CreateAssetMenu(fileName = "Evt_Float", menuName = "VoidMart/Events/Float")]
-    public class FloatChannel : GameEventChannel<float> { }
-
-    [CreateAssetMenu(fileName = "Evt_Double", menuName = "VoidMart/Events/Double")]
-    public class DoubleChannel : GameEventChannel<double> { }
-
-    [CreateAssetMenu(fileName = "Evt_String", menuName = "VoidMart/Events/String")]
-    public class StringChannel : GameEventChannel<string> { }
-
-    [CreateAssetMenu(fileName = "Evt_Swallow", menuName = "VoidMart/Events/Swallow")]
-    public class SwallowChannel : GameEventChannel<SwallowInfo> { }
-
-    [CreateAssetMenu(fileName = "Evt_Sale", menuName = "VoidMart/Events/Sale")]
-    public class SaleChannel : GameEventChannel<SaleInfo> { }
-
-    [CreateAssetMenu(fileName = "Evt_Puzzle", menuName = "VoidMart/Events/PuzzleResult")]
-    public class PuzzleChannel : GameEventChannel<PuzzleResult> { }
-
-    [CreateAssetMenu(fileName = "Evt_State", menuName = "VoidMart/Events/GameState")]
-    public class GameStateChannel : GameEventChannel<GameState> { }
-
-    [CreateAssetMenu(fileName = "Evt_Toast", menuName = "VoidMart/Events/Toast")]
-    public class ToastChannel : GameEventChannel<ToastRequest> { }
 
     // ---------------------------------------------------------------- payloads
 

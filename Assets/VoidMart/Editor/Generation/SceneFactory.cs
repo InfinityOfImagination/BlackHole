@@ -294,20 +294,71 @@ namespace VoidMart.EditorTools
             go.AddComponent<EventSystem>();
 
             // This project ships with Input System handling only, so the legacy module would
-            // throw at runtime. Prefer the Input System module and make sure it has actions:
-            // AddComponent does not call Reset(), which is what normally assigns them.
+            // throw at runtime. Add the Input System module through ObjectFactory, which runs
+            // Reset() exactly as adding it from the Inspector does - that is what wires up the
+            // UI actions.
             var moduleType = Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
-            if (moduleType != null)
-            {
-                var module = go.AddComponent(moduleType);
-                var assign = moduleType.GetMethod("AssignDefaultActions",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                try { assign?.Invoke(module, null); }
-                catch (Exception e) { Debug.LogWarning("[VoidMart] Could not assign default UI actions: " + e.Message); }
-            }
-            else
+            if (moduleType == null)
             {
                 go.AddComponent<StandaloneInputModule>();
+                return;
+            }
+
+            var module = ObjectFactory.AddComponent(go, moduleType);
+            if (HasUiActions(module)) return;
+
+            // Reset did not populate the actions (it throws on some package versions). Fall back
+            // to the project's own action asset: assigning `actionsAsset` makes the module look
+            // its actions up by their standard UI map names.
+            if (TryAssignProjectActions(module, moduleType)) return;
+
+            Debug.LogWarning(
+                "[VoidMart] The EventSystem's Input System module has no UI actions. Select the " +
+                "EventSystem in the generated scenes and press 'Assign Default Actions' on the " +
+                "Input System UI Input Module, or drop an .inputactions asset onto its Actions Asset field.");
+        }
+
+        static bool HasUiActions(Component module)
+        {
+            if (module == null) return false;
+            var serialized = new SerializedObject(module);
+            var asset = serialized.FindProperty("m_ActionsAsset");
+            if (asset != null && asset.objectReferenceValue != null) return true;
+            var point = serialized.FindProperty("m_PointAction");
+            return point != null && point.objectReferenceValue != null;
+        }
+
+        static bool TryAssignProjectActions(Component module, Type moduleType)
+        {
+            var property = moduleType.GetProperty("actionsAsset",
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            if (property == null || !property.CanWrite) return false;
+
+            string[] guids = AssetDatabase.FindAssets("t:InputActionAsset");
+            if (guids == null || guids.Length == 0) return false;
+
+            // Prefer the template's own asset when the project has more than one.
+            string chosen = null;
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (chosen == null) chosen = path;
+                if (path.EndsWith("InputSystem_Actions.inputactions", StringComparison.Ordinal)) { chosen = path; break; }
+            }
+
+            var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(chosen);
+            if (asset == null || !property.PropertyType.IsInstanceOfType(asset)) return false;
+
+            try
+            {
+                property.SetValue(module, asset, null);
+                return HasUiActions(module);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[VoidMart] Could not assign '" + chosen + "' to the UI input module: " +
+                                 (e.InnerException ?? e).Message);
+                return false;
             }
         }
     }
