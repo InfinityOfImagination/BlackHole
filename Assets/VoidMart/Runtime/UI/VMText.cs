@@ -59,7 +59,9 @@ namespace VoidMart.UI
             set { m_Alignment = value; SetVerticesDirty(); }
         }
 
-        public override Texture mainTexture => m_Font != null && m_Font.atlas != null ? m_Font.atlas : whiteTexture;
+        // Falls back to the engine's 1x1 white texture so an unassigned font still renders
+        // (as solid quads) instead of throwing.
+        public override Texture mainTexture => m_Font != null && m_Font.atlas != null ? m_Font.atlas : Texture2D.whiteTexture;
 
         public void SetText(string value) => Text = value;
 
